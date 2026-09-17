@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-passo_6_ok-green?style=for-the-badge&logo=github" alt="status"/>
+  <img src="https://img.shields.io/badge/status-passo_7_ok-green?style=for-the-badge&logo=github" alt="status"/>
   <img src="https://img.shields.io/badge/licenca-MIT-green?style=for-the-badge" alt="license"/>
-  <img src="https://img.shields.io/badge/sprint-2_de_4-blue?style=for-the-badge" alt="sprint"/>
+  <img src="https://img.shields.io/badge/sprint-3_de_4-blue?style=for-the-badge" alt="sprint"/>
   <img src="https://img.shields.io/badge/LLM-gpt_oss_120b-orange?style=for-the-badge" alt="llm"/>
 </p>
 
@@ -122,7 +122,7 @@ PlantLab/
 
 - [x] **Passo 5 — PlantNet real** (foto vira especie + confianca + arquetipo; fallback p/ nome sem chave)
 - [x] **Passo 6 — LLM real (gpt-oss-120b)** (evento livre vira `{explanation, simulation_params}` JSON estrito, inclui Protocolo E-01)
-- [ ] **Passo 7 — Refino fluxo real** (loading longo, confianca < 0.5, erros traduzidos)
+- [x] **Passo 7 — Refino fluxo real** (timeout 45s/75s, erros traduzidos sem jargao, alerta confianca < 0.5, loading em estagios)
 
 ### SPRINT 3 — O modelo 3D
 

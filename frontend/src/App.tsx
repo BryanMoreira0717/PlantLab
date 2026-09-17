@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type DragEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type DragEvent } from 'react'
 import {
   identifyPlant,
   simulateEvent,
@@ -46,6 +46,14 @@ function App() {
   const [simulation, setSimulation] = useState<Simulation | null>(null)
   const [simulating, setSimulating] = useState(false)
   const [simulateError, setSimulateError] = useState<string | null>(null)
+  const [slowSim, setSlowSim] = useState(false)
+
+  // Passo 7: a IA real demora — depois de 8s o loading muda o discurso.
+  useEffect(() => {
+    if (!simulating) return
+    const timer = setTimeout(() => setSlowSim(true), 8000)
+    return () => clearTimeout(timer)
+  }, [simulating])
 
   function replaceImage(file: File | undefined) {
     if (!file) return
@@ -107,6 +115,7 @@ function App() {
       return
     }
     setSimulating(true)
+    setSlowSim(false)
     try {
       const result = await simulateEvent(
         identification.species_scientific_name,
@@ -256,6 +265,13 @@ function App() {
                   </span>
                   <span className="chip">{identification.archetype}</span>
                 </div>
+                {identification.confidence < 0.5 && (
+                  <p className="warn-box" role="alert">
+                    Confiança baixa ({Math.round(identification.confidence * 100)}%) — a foto pode
+                    estar ruim. Tente outra foto mais nítida ou confira o nome digitado e
+                    identifique de novo.
+                  </p>
+                )}
               </div>
             )}
           </section>
@@ -305,7 +321,10 @@ function App() {
           {simulating ? (
             <div className="result-loading">
               <span className="btn-spinner big" aria-hidden="true" />
-              <p>Simulando… consultando o backend.</p>
+              <div>
+                <p>{slowSim ? 'A IA está elaborando a resposta, quase lá…' : 'Consultando a base biológica…'}</p>
+                <small className="loading-sub">A primeira resposta pode levar até ~1 minuto.</small>
+              </div>
             </div>
           ) : simulation && params && colorMeta ? (
             <div className="result-full">

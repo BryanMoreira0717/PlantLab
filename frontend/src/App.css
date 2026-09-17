@@ -592,6 +592,25 @@
   animation: fade-in 0.3s ease;
 }
 
+.warn-box {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--warn-text);
+  background: var(--warn-bg);
+  border: 1.5px solid var(--warn-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  animation: fade-in 0.3s ease;
+}
+
+.loading-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .id-result {
   margin-top: 16px;
   border: 1.5px solid var(--primary-border);
