@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/status-passo_6_ok-green?style=for-the-badge&logo=github" alt="status"/>
   <img src="https://img.shields.io/badge/licenca-MIT-green?style=for-the-badge" alt="license"/>
   <img src="https://img.shields.io/badge/sprint-2_de_4-blue?style=for-the-badge" alt="sprint"/>
-  <img src="https://img.shields.io/badge/LLM-llama_3.3_70B-orange?style=for-the-badge" alt="llm"/>
+  <img src="https://img.shields.io/badge/LLM-gpt_oss_120b-orange?style=for-the-badge" alt="llm"/>
 </p>
 
 <p align="center">
@@ -37,7 +37,7 @@ O PlantLab 3D resolve o medo de errar cuidando de plantas. Em vez de manual chat
 
 1. Identifica a planta (foto ou nome digitado)
 2. Descreve um "e se..." em texto livre ("7 dias sem luz?", "12L de agua de uma vez?")
-3. Recebe explicacao biologica gerada por LLM (Llama 3.3 70B)
+3. Recebe explicacao biologica gerada por LLM (gpt-oss-120b via Groq)
 4. Ve um modelo 3D reagindo (murcha, muda de cor, cresce/encolhe, alerta de estresse)
 5. Arrasta uma linha do tempo (dia 0 ate dia N) e compara dois cenarios lado a lado
 
@@ -51,7 +51,7 @@ flowchart LR
     F -->|POST identify-plant| B[Backend FastAPI]
     B -->|foto| P[PlantNet API]
     F -->|POST simulate-event| B
-    B --> C[Llama 3.3 70B JSON]
+    B --> C[gpt-oss-120b JSON]
     C -->|simulation_params| F
     F --> V[PlantViewer 3D Three.js]
     A[pacote /ai prompts + arquetipos] --> B
@@ -73,7 +73,7 @@ Exemplo: foto de manjericao vira `Ocimum basilicum` (confianca 0.92, arquetipo `
   <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="fastapi"/>
   <img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" alt="python"/>
   <img src="https://img.shields.io/badge/PlantNet-2E7D32?style=flat&logo=leaflet&logoColor=white" alt="plantnet"/>
-  <img src="https://img.shields.io/badge/Llama_3.3_70B-0467DF?style=flat&logo=meta&logoColor=white" alt="llama"/>
+  <img src="https://img.shields.io/badge/gpt_oss_120b-0467DF?style=flat&logo=openai&logoColor=white" alt="gptoss"/>
   <img src="https://img.shields.io/badge/pytest-0A9EDC?style=flat&logo=pytest&logoColor=white" alt="pytest"/>
 </p>
 
@@ -121,7 +121,7 @@ PlantLab/
 ### SPRINT 2 — Inteligencia real
 
 - [x] **Passo 5 — PlantNet real** (foto vira especie + confianca + arquetipo; fallback p/ nome sem chave)
-- [x] **Passo 6 — Llama 3.3 70B real** (evento livre vira `{explanation, simulation_params}` JSON estrito, inclui Protocolo E-01)
+- [x] **Passo 6 — LLM real (gpt-oss-120b)** (evento livre vira `{explanation, simulation_params}` JSON estrito, inclui Protocolo E-01)
 - [ ] **Passo 7 — Refino fluxo real** (loading longo, confianca < 0.5, erros traduzidos)
 
 ### SPRINT 3 — O modelo 3D
@@ -195,14 +195,14 @@ Copie `backend/.env.example` para `backend/.env` (nunca commite o `.env`):
 ```env
 PLANTNET_API_KEY=
 LLM_PROVIDER=groq
-LLM_MODEL=llama-3.3-70b-versatile
+LLM_MODEL=openai/gpt-oss-120b
 LLM_API_KEY=
 ```
 
 | Chave | Onde conseguir | Quando precisa |
 |-------|----------------|----------------|
 | `PLANTNET_API_KEY` | my.plantnet.org (conta gratuita) | Passo 5 em diante |
-| `LLM_API_KEY` | provedor do Llama 3.3 70B (Groq, Together, OpenRouter ou HF) | Passo 6 em diante |
+| `LLM_API_KEY` | provedor do LLM (Groq, Together ou OpenRouter) | Passo 6 em diante |
 
 Ate o Passo 4 nenhuma chave e necessaria (usamos mocks). No Passo 5, a identificacao
 por foto precisa da chave; sem ela o backend usa o nome digitado (fallback).
@@ -221,7 +221,7 @@ testes automatizados, os pytest usam a API mockada; a chamada real so acontece a
 
 1. Crie a conta no provedor (recomendado: https://console.groq.com — tem plano gratuito).
 2. Gere a API key e copie.
-3. Em `backend/.env`: `LLM_PROVIDER=groq`, `LLM_MODEL=llama-3.3-70b-versatile`, `LLM_API_KEY=sua_chave`.
+3. Em `backend/.env`: `LLM_PROVIDER=groq`, `LLM_MODEL=openai/gpt-oss-120b`, `LLM_API_KEY=sua_chave`.
 4. Reinicie o uvicorn e teste em `/docs` com especie + evento (ex.: manjericao x excesso de agua,
    cacto x excesso de agua — as respostas devem diferir e fazer sentido biologico).
 

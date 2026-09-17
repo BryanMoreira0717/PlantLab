@@ -22,4 +22,4 @@ Regras:
 - growth_rate_change: -1 a 1 (negativo = prejudicado, positivo = favorecido).
 - stress_flag: true/false.
 - timeline_days: inteiro com os dias estimados para os efeitos aparecerem.
-- Modelo alvo: Llama 3.3 70B (provedor configuravel via .env).
+- Modelo padrao: gpt-oss-120b via Groq (Llama 3.3 70B segue disponivel via together/openrouter).

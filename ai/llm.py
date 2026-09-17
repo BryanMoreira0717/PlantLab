@@ -1,4 +1,7 @@
-"""Raciocinio biologico via LLM — Llama 3.3 70B (Passo 6).
+"""Raciocinio biologico via LLM (Passo 6).
+
+Modelo padrao: gpt-oss-120b via Groq (o Llama 3.3 70B foi aposentado pela Groq;
+segue disponivel via together/openrouter configurando LLM_PROVIDER/LLM_MODEL).
 
 Provedores suportados (todos com API compativel ao formato chat/completions):
 groq (padrao), together, openrouter. Config via .env:
@@ -23,7 +26,7 @@ PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 PROVIDERS: dict[str, dict[str, str]] = {
     "groq": {
         "url": "https://api.groq.com/openai/v1/chat/completions",
-        "model": "llama-3.3-70b-versatile",
+        "model": "openai/gpt-oss-120b",
     },
     "together": {
         "url": "https://api.together.xyz/v1/chat/completions",
