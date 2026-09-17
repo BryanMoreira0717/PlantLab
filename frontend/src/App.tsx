@@ -5,6 +5,7 @@ import {
   type Identification,
   type Simulation,
 } from './api'
+import PlantViewer from './components/PlantViewer'
 import './App.css'
 
 const MAX_PREVIEW_LABEL = 48
@@ -318,6 +319,7 @@ function App() {
         <section className="result" aria-labelledby="result-title" aria-live="polite">
           <p className="card-kicker">Etapa 3</p>
           <h2 id="result-title">Resultado</h2>
+          <PlantViewer archetype={identification?.archetype} />
           {simulating ? (
             <div className="result-loading">
               <span className="btn-spinner big" aria-hidden="true" />
@@ -371,11 +373,9 @@ function App() {
               </div>
             </div>
           ) : (
-            <div className="result-placeholder">
-              <span className="result-sprout" aria-hidden="true">🌱</span>
-              <p>[resultado vai aparecer aqui]</p>
-              <small>Identifique a planta, descreva o evento e clique em Simular.</small>
-            </div>
+            <p className="result-hint">
+              Identifique a planta, descreva o evento e clique em Simular — a explicação aparece aqui.
+            </p>
           )}
         </section>
       </main>

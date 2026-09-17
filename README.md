@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-passo_7_ok-green?style=for-the-badge&logo=github" alt="status"/>
+  <img src="https://img.shields.io/badge/status-passo_8_ok-green?style=for-the-badge&logo=github" alt="status"/>
   <img src="https://img.shields.io/badge/licenca-MIT-green?style=for-the-badge" alt="license"/>
   <img src="https://img.shields.io/badge/sprint-3_de_4-blue?style=for-the-badge" alt="sprint"/>
   <img src="https://img.shields.io/badge/LLM-gpt_oss_120b-orange?style=for-the-badge" alt="llm"/>
@@ -92,8 +92,13 @@ PlantLab/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-├── frontend/                  # React + Vite + TS (Passo 1: tela padrao Vite)
-│   ├── src/ (App.tsx, main.tsx)
+├── frontend/                  # React + Vite + TS + R3F
+│   ├── src/
+│   │   ├── App.tsx              # tela principal
+│   │   ├── api.ts               # cliente do backend
+│   │   ├── components/PlantViewer.tsx  # cena 3D (Passo 8)
+│   │   └── main.tsx
+│   ├── e2e/smoke-3d.mjs         # teste headless do 3D (Playwright)
 │   ├── public/models/         # .glb por arquetipo (chega no Passo 9)
 │   └── package.json
 ├── backend/                   # FastAPI (Passo 3: /health + stubs mockados)
@@ -126,7 +131,7 @@ PlantLab/
 
 ### SPRINT 3 — O modelo 3D
 
-- [ ] **Passo 8 — R3F + placeholder** (`<PlantViewer/>` com luz + OrbitControls)
+- [x] **Passo 8 — R3F + placeholder** (`<PlantViewer/>` com luz + OrbitControls + smoke headless)
 - [ ] **Passo 9 — .glb reais** (`useGLTF` por arquetipo em `public/models/`)
 - [ ] **Passo 10 — Animar pela simulacao** (murcha, cor, escala, stress com `useFrame`, inclui animacoes do Protocolo E-01)
 

@@ -3,6 +3,7 @@ node_modules/
 frontend/dist/
 frontend/dist-ssr/
 frontend/*.local
+frontend/e2e/shot-*.png
 
 # Python / backend
 __pycache__/
