@@ -319,7 +319,7 @@ function App() {
         <section className="result" aria-labelledby="result-title" aria-live="polite">
           <p className="card-kicker">Etapa 3</p>
           <h2 id="result-title">Resultado</h2>
-          <PlantViewer archetype={identification?.archetype} />
+          <PlantViewer archetype={identification?.archetype} simulation={simulation?.simulation_params ?? null} />
           {simulating ? (
             <div className="result-loading">
               <span className="btn-spinner big" aria-hidden="true" />

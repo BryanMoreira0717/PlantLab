@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-passo_9_ok-green?style=for-the-badge&logo=github" alt="status"/>
+  <img src="https://img.shields.io/badge/status-passo_10_ok-green?style=for-the-badge&logo=github" alt="status"/>
   <img src="https://img.shields.io/badge/licenca-MIT-green?style=for-the-badge" alt="license"/>
   <img src="https://img.shields.io/badge/sprint-3_de_4-blue?style=for-the-badge" alt="sprint"/>
   <img src="https://img.shields.io/badge/LLM-gpt_oss_120b-orange?style=for-the-badge" alt="llm"/>
@@ -97,7 +97,9 @@ PlantLab/
 │   ├── src/
 │   │   ├── App.tsx              # tela principal
 │   │   ├── api.ts               # cliente do backend
-│   │   ├── components/PlantViewer.tsx  # cena 3D (Passo 8)
+│   │   ├── components/PlantViewer.tsx  # cena 3D animada (Passos 8-10)
+│   │   ├── components/effects.ts     # matematica dos efeitos (murcha/cor/escala)
+│   │   ├── components/models.ts      # biblioteca .glb + Regra M-01
 │   │   └── main.tsx
 │   ├── e2e/smoke-3d.mjs         # teste headless do 3D (Playwright)
 │   ├── public/models/         # suculenta.glb (CC0 Quaternius) + LEIAME.txt
@@ -134,7 +136,7 @@ PlantLab/
 
 - [x] **Passo 8 — R3F + placeholder** (`<PlantViewer/>` com luz + OrbitControls + smoke headless)
 - [x] **Passo 9 — .glb reais** (M-01: `suculenta.glb` CC0 + fallback, `useGLTF`, ErrorBoundary, auto-fit, e2e swap)
-- [ ] **Passo 10 — Animar pela simulacao** (murcha, cor, escala, stress com `useFrame`, inclui animacoes do Protocolo E-01, sobre qualquer modelo da M-01)
+- [x] **Passo 10 — Animar pela simulacao** (murcha/cor/escala/stress suaves via `useFrame`, E-01, badge + glow)
 
 ### SPRINT 4 — Timeline, comparacao e polish
 

@@ -398,6 +398,25 @@
   pointer-events: none;
 }
 
+.stress-badge {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(178, 34, 34, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px -4px rgba(178, 34, 34, 0.6);
+  animation: stress-pulse 1.2s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes stress-pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
 .viewer-wrap canvas {
   display: block;
 }
