@@ -2,10 +2,10 @@
 
 Passos implementados:
 - Passo 1: setup + GET /health.
-- Passo 3: stub mockado de POST /simulate-event (resposta fixa; o raciocinio
-  real via Llama 3.3 70B chega no Passo 6, mantendo o formato).
 - Passo 5: POST /identify-plant real via PlantNet (foto) com fallback gracioso
   para o nome digitado quando nao ha foto, chave ou a API falha.
+- Passo 6: POST /simulate-event real via Llama 3.3 70B (provedor configuravel),
+  com parse estrito e Protocolo E-01 para casos extremos.
 
 Execucao local:
     cd backend
@@ -31,12 +31,13 @@ load_dotenv()  # permite PLANTNET_API_KEY em backend/.env no dev local
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from ai.archetypes import map_species_to_archetype  # noqa: E402
+from ai.llm import LLMError, reason_event  # noqa: E402
 from ai.plantnet import PlantNetError, identify_species  # noqa: E402
 
 app = FastAPI(
     title="PlantLab 3D API",
     description="API educativa: identifica plantas e simula o efeito de eventos (texto + 3D).",
-    version="0.3.0",
+    version="0.4.0",
 )
 
 # Libera o frontend Vite (porta padrao 5173). Em producao, restrinja.
@@ -105,27 +106,6 @@ class SimulationResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Mock do Passo 3 (POST /simulate-event; IA real chega no Passo 6)
-# ---------------------------------------------------------------------------
-
-MOCK_SIMULATION = {
-    "explanation": (
-        "Um excesso repentino de água pode causar encharcamento do solo, "
-        "reduzindo o oxigênio disponível para as raízes e favorecendo o "
-        "apodrecimento. Esta é uma estimativa educativa e não substitui "
-        "experimentos reais."
-    ),
-    "simulation_params": {
-        "wilt_level": 0.3,
-        "leaf_color_shift": "amarelado",
-        "growth_rate_change": -0.2,
-        "stress_flag": True,
-        "timeline_days": 7,
-    },
-}
-
-
-# ---------------------------------------------------------------------------
 # Rotas
 # ---------------------------------------------------------------------------
 
@@ -141,7 +121,7 @@ def root() -> dict:
     """Mensagem de boas-vindas com link para /docs."""
     return {
         "name": "PlantLab 3D API",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "docs": "/docs",
         "health": "/health",
     }
@@ -230,10 +210,10 @@ async def identify_plant(
 @app.post(
     "/simulate-event",
     response_model=SimulationResponse,
-    summary="Simula um evento (STUB mockado)",
+    summary="Simula um evento (Llama 3.3 70B)",
 )
 async def simulate_event(payload: SimulationRequest) -> dict:
-    """Simula o efeito de um evento sobre a espécie (stub do Passo 3).
+    """Simula o efeito de um evento sobre a espécie via LLM (Passo 6).
 
     Entrada (JSON, ambos obrigatórios e não-vazios):
     - species_scientific_name: ex. "Ocimum basilicum".
@@ -242,8 +222,9 @@ async def simulate_event(payload: SimulationRequest) -> dict:
     Saída: {explanation (PT-BR, 2-4 frases), simulation_params {wilt_level 0-1,
     leaf_color_shift, growth_rate_change -1..1, stress_flag, timeline_days}}.
 
-    Erros: 400 se algum campo faltar ou vier vazio.
-    Nota: hoje retorna um JSON fixo; o raciocínio real via Llama 3.3 70B chega no Passo 6.
+    Erros: 400 se algum campo faltar ou vier vazio; 502 se a chave do LLM não
+    estiver configurada ou a geração falhar (rede, quota ou formato inválido).
+    Casos extremos seguem o Protocolo E-01 (ai/prompts/protocolo_casos_extremos.md).
     """
     species = (payload.species_scientific_name or "").strip()
     event = (payload.event_description or "").strip()
@@ -252,4 +233,23 @@ async def simulate_event(payload: SimulationRequest) -> dict:
             status_code=400,
             detail="species_scientific_name e event_description são obrigatórios.",
         )
-    return MOCK_SIMULATION
+    api_key = os.getenv("LLM_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=502,
+            detail="Simulação por IA indisponível (LLM_API_KEY não configurada). "
+            "Configure a chave do provedor e tente de novo.",
+        )
+    try:
+        return await reason_event(
+            species,
+            event,
+            provider=os.getenv("LLM_PROVIDER", "groq"),
+            model=os.getenv("LLM_MODEL", "").strip() or None,
+            api_key=api_key,
+        )
+    except LLMError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Não foi possível gerar a simulação ({exc}). Tente de novo.",
+        ) from exc

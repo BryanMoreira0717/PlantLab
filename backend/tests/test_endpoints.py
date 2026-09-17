@@ -19,10 +19,45 @@ sys.path.insert(0, str(BACKEND_DIR.parent))
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+import main  # noqa: E402
 from ai.archetypes import ARCHETYPE_VALUES  # noqa: E402
+from ai.llm import LLMError  # noqa: E402
 from main import app  # noqa: E402
 
 client = TestClient(app)
+
+FAKE_SIMULATION = {
+    "explanation": "Excesso de água encharca o solo e asfixia as raízes. Estimativa educativa.",
+    "simulation_params": {
+        "wilt_level": 0.3,
+        "leaf_color_shift": "amarelado",
+        "growth_rate_change": -0.2,
+        "stress_flag": True,
+        "timeline_days": 7,
+    },
+}
+
+
+async def _fake_reason_ok(species, event, **kwargs):
+    assert species == VALID_SIMULATION["species_scientific_name"]
+    assert event == VALID_SIMULATION["event_description"]
+    return FAKE_SIMULATION
+
+
+async def _fake_reason_fail(species, event, **kwargs):
+    raise LLMError("LLM fora do ar (mock).")
+
+
+@pytest.fixture()
+def _mock_llm_ok(monkeypatch):
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.setattr(main, "reason_event", _fake_reason_ok)
+
+
+@pytest.fixture()
+def _mock_llm_fail(monkeypatch):
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    monkeypatch.setattr(main, "reason_event", _fake_reason_fail)
 
 
 @pytest.fixture(autouse=True)
@@ -80,7 +115,7 @@ def test_identify_without_anything_returns_400():
     assert "plant_name" in r.json()["detail"]
 
 
-def test_simulate_valid_returns_mock():
+def test_simulate_valid_returns_llm_result(_mock_llm_ok):
     r = client.post("/simulate-event", json=VALID_SIMULATION)
     assert r.status_code == 200
     body = r.json()
@@ -91,6 +126,17 @@ def test_simulate_valid_returns_mock():
     assert -1 <= params["growth_rate_change"] <= 1
     assert isinstance(params["stress_flag"], bool)
     assert isinstance(params["timeline_days"], int)
+
+
+def test_simulate_without_key_returns_502(monkeypatch):
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    r = client.post("/simulate-event", json=VALID_SIMULATION)
+    assert r.status_code == 502
+
+
+def test_simulate_llm_failure_returns_502(_mock_llm_fail):
+    r = client.post("/simulate-event", json=VALID_SIMULATION)
+    assert r.status_code == 502
 
 
 def test_simulate_missing_species_returns_400():

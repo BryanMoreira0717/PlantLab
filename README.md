@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-passo_5_ok-green?style=for-the-badge&logo=github" alt="status"/>
+  <img src="https://img.shields.io/badge/status-passo_6_ok-green?style=for-the-badge&logo=github" alt="status"/>
   <img src="https://img.shields.io/badge/licenca-MIT-green?style=for-the-badge" alt="license"/>
   <img src="https://img.shields.io/badge/sprint-2_de_4-blue?style=for-the-badge" alt="sprint"/>
   <img src="https://img.shields.io/badge/LLM-llama_3.3_70B-orange?style=for-the-badge" alt="llm"/>
@@ -121,7 +121,7 @@ PlantLab/
 ### SPRINT 2 — Inteligencia real
 
 - [x] **Passo 5 — PlantNet real** (foto vira especie + confianca + arquetipo; fallback p/ nome sem chave)
-- [ ] **Passo 6 — Llama 3.3 70B real** (evento livre vira `{explanation, simulation_params}` JSON estrito, inclui Protocolo E-01)
+- [x] **Passo 6 — Llama 3.3 70B real** (evento livre vira `{explanation, simulation_params}` JSON estrito, inclui Protocolo E-01)
 - [ ] **Passo 7 — Refino fluxo real** (loading longo, confianca < 0.5, erros traduzidos)
 
 ### SPRINT 3 — O modelo 3D
@@ -216,6 +216,18 @@ por foto precisa da chave; sem ela o backend usa o nome digitado (fallback).
 
 Limites gratuitos podem mudar — confira em my.plantnet.org. Para economizar quota nos
 testes automatizados, os pytest usam a API mockada; a chamada real so acontece ao vivo.
+
+### Chave do LLM (Passo 6)
+
+1. Crie a conta no provedor (recomendado: https://console.groq.com — tem plano gratuito).
+2. Gere a API key e copie.
+3. Em `backend/.env`: `LLM_PROVIDER=groq`, `LLM_MODEL=llama-3.3-70b-versatile`, `LLM_API_KEY=sua_chave`.
+4. Reinicie o uvicorn e teste em `/docs` com especie + evento (ex.: manjericao x excesso de agua,
+   cacto x excesso de agua — as respostas devem diferir e fazer sentido biologico).
+
+Provedores suportados: `groq`, `together`, `openrouter` (todos via `LLM_PROVIDER`; sem
+`LLM_MODEL` usa o padrao do provedor). Sem chave, o endpoint responde 502 claro — e os
+pytest nunca gastam credito (LLM sempre mockado).
 
 ## Como testar o parcial do Passo 1
 
