@@ -370,6 +370,7 @@
 /* ---------- Result ---------- */
 
 .viewer-wrap {
+  position: relative;
   margin-top: 14px;
   border: 1.5px solid var(--surface-border);
   border-radius: 12px;
@@ -378,6 +379,23 @@
   min-height: 260px;
   background: #eef3e8;
   box-shadow: var(--shadow-sm);
+}
+
+.viewer-loading {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  background: rgba(255, 253, 248, 0.92);
+  border: 1px solid var(--surface-border);
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
 }
 
 .viewer-wrap canvas {
