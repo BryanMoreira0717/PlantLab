@@ -1,0 +1,27 @@
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
+# Python / backend
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# SO / editores
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Modelos 3D grandes (quando chegarem no Passo 9, decidir se versiona .glb ou usa LFS)
+# frontend/public/models/*.glb
