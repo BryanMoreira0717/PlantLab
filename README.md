@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-passo_4_ok-green?style=for-the-badge&logo=github" alt="status"/>
+  <img src="https://img.shields.io/badge/status-passo_5_ok-green?style=for-the-badge&logo=github" alt="status"/>
   <img src="https://img.shields.io/badge/licenca-MIT-green?style=for-the-badge" alt="license"/>
   <img src="https://img.shields.io/badge/sprint-2_de_4-blue?style=for-the-badge" alt="sprint"/>
   <img src="https://img.shields.io/badge/LLM-llama_3.3_70B-orange?style=for-the-badge" alt="llm"/>
@@ -120,7 +120,7 @@ PlantLab/
 
 ### SPRINT 2 — Inteligencia real
 
-- [ ] **Passo 5 — PlantNet real** (foto vira especie + confianca + arquetipo)
+- [x] **Passo 5 — PlantNet real** (foto vira especie + confianca + arquetipo; fallback p/ nome sem chave)
 - [ ] **Passo 6 — Llama 3.3 70B real** (evento livre vira `{explanation, simulation_params}` JSON estrito, inclui Protocolo E-01)
 - [ ] **Passo 7 — Refino fluxo real** (loading longo, confianca < 0.5, erros traduzidos)
 
@@ -204,7 +204,18 @@ LLM_API_KEY=
 | `PLANTNET_API_KEY` | my.plantnet.org (conta gratuita) | Passo 5 em diante |
 | `LLM_API_KEY` | provedor do Llama 3.3 70B (Groq, Together, OpenRouter ou HF) | Passo 6 em diante |
 
-Ate o Passo 4 nenhuma chave e necessaria (usamos mocks).
+Ate o Passo 4 nenhuma chave e necessaria (usamos mocks). No Passo 5, a identificacao
+por foto precisa da chave; sem ela o backend usa o nome digitado (fallback).
+
+### Chave do PlantNet (gratuita)
+
+1. Crie a conta em https://my.plantnet.org e confirme o e-mail.
+2. Gere a API key no painel e copie.
+3. Cole em `backend/.env` como `PLANTNET_API_KEY=sua_chave` (crie a partir do `.env.example`).
+4. Reinicie o uvicorn e teste em `/docs` com uma foto real.
+
+Limites gratuitos podem mudar — confira em my.plantnet.org. Para economizar quota nos
+testes automatizados, os pytest usam a API mockada; a chamada real so acontece ao vivo.
 
 ## Como testar o parcial do Passo 1
 

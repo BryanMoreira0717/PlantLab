@@ -2,9 +2,10 @@
 
 Passos implementados:
 - Passo 1: setup + GET /health.
-- Passo 3: stubs mockados de POST /identify-plant e POST /simulate-event
-  (respostas fixas; a logica real com PlantNet e Llama 3.3 70B chega no Sprint 2,
-  mantendo estes mesmos formatos de entrada e saida).
+- Passo 3: stub mockado de POST /simulate-event (resposta fixa; o raciocinio
+  real via Llama 3.3 70B chega no Passo 6, mantendo o formato).
+- Passo 5: POST /identify-plant real via PlantNet (foto) com fallback gracioso
+  para o nome digitado quando nao ha foto, chave ou a API falha.
 
 Execucao local:
     cd backend
@@ -15,22 +16,27 @@ Docs interativas: http://localhost:8000/docs
 Health check:     http://localhost:8000/health -> {"status": "ok"}
 """
 
+import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+load_dotenv()  # permite PLANTNET_API_KEY em backend/.env no dev local
+
 # Permite `from ai...` tanto via uvicorn quanto via pytest, de qualquer cwd.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from ai.archetypes import normalize_archetype  # noqa: E402
+from ai.archetypes import map_species_to_archetype  # noqa: E402
+from ai.plantnet import PlantNetError, identify_species  # noqa: E402
 
 app = FastAPI(
     title="PlantLab 3D API",
     description="API educativa: identifica plantas e simula o efeito de eventos (texto + 3D).",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 # Libera o frontend Vite (porta padrao 5173). Em producao, restrinja.
@@ -99,15 +105,8 @@ class SimulationResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Mocks do Passo 3 (substituidos por IA real no Sprint 2)
+# Mock do Passo 3 (POST /simulate-event; IA real chega no Passo 6)
 # ---------------------------------------------------------------------------
-
-MOCK_IDENTIFICATION = {
-    "species_common_name": "Manjericão",
-    "species_scientific_name": "Ocimum basilicum",
-    "confidence": 0.92,
-    "archetype": normalize_archetype("folha_larga"),
-}
 
 MOCK_SIMULATION = {
     "explanation": (
@@ -142,7 +141,7 @@ def root() -> dict:
     """Mensagem de boas-vindas com link para /docs."""
     return {
         "name": "PlantLab 3D API",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "docs": "/docs",
         "health": "/health",
     }
@@ -151,34 +150,81 @@ def root() -> dict:
 @app.post(
     "/identify-plant",
     response_model=IdentificationResponse,
-    summary="Identifica a planta (STUB mockado)",
+    summary="Identifica a planta (PlantNet + fallback)",
 )
 async def identify_plant(
     image: UploadFile | None = File(default=None),
     plant_name: str | None = Form(default=None),
 ) -> dict:
-    """Identifica a planta a partir de foto e/ou nome (stub do Passo 3).
+    """Identifica a planta a partir de foto e/ou nome (Passo 5).
 
     Entrada (multipart/form-data, ambos opcionais, mas PELO MENOS UM exigido):
-    - image: arquivo de imagem da planta.
+    - image: arquivo de imagem da planta (JPEG/PNG).
     - plant_name: nome digitado, ex. "manjericão".
+
+    Comportamento:
+    1. Com foto + PLANTNET_API_KEY configurada: chama o PlantNet e devolve o
+       melhor candidato (nome cientifico, popular, score) + archetype do /ai.
+    2. Sem foto, ou sem chave, ou com falha na API: fallback gracioso usando o
+       nome digitado (confianca 0.5 = nao verificado por IA) + archetype do /ai.
+    3. Sem foto e sem nome: 400. Com foto mas sem chave/nome e API indisponivel:
+       502 pedindo para digitar o nome ou tentar de novo.
 
     Saída: {species_common_name, species_scientific_name, confidence (0-1),
     archetype (suculenta | folha_larga | arbustiva | graminea | arvore_pequena)}.
 
-    Erros: 400 se nem imagem nem nome forem enviados.
-    Nota: hoje retorna um JSON fixo; a chamada real ao PlantNet chega no Passo 5.
+    Erros: 400 se nem imagem nem nome forem enviados; 502 se a identificacao
+    por foto falhar e nao houver nome para fallback.
     """
+    typed_name = (plant_name or "").strip()
     has_image = image is not None and bool(image.filename)
-    has_name = bool((plant_name or "").strip())
-    if not has_image and not has_name:
+    if not has_image and not typed_name:
         raise HTTPException(
             status_code=400,
             detail="Envie uma imagem ou o nome da planta (plant_name).",
         )
+
     if has_image and image is not None:
-        await image.read()  # stub: conteúdo consumido e ignorado no mock
-    return MOCK_IDENTIFICATION
+        api_key = os.getenv("PLANTNET_API_KEY", "").strip()
+        if not api_key and not typed_name:
+            raise HTTPException(
+                status_code=502,
+                detail="Identificação por foto indisponível (PLANTNET_API_KEY "
+                "não configurada). Digite o nome da planta ou configure a chave.",
+            )
+        if api_key:
+            try:
+                content = await image.read()
+                found = await identify_species(
+                    image_bytes=content,
+                    filename=image.filename or "planta.jpg",
+                    media_type=image.content_type or "image/jpeg",
+                    api_key=api_key,
+                )
+                return {
+                    "species_common_name": found["common_name"],
+                    "species_scientific_name": found["scientific_name"],
+                    "confidence": found["confidence"],
+                    "archetype": map_species_to_archetype(
+                        found["scientific_name"], found["common_name"]
+                    ),
+                }
+            except PlantNetError as exc:
+                if not typed_name:
+                    raise HTTPException(
+                        status_code=502,
+                        detail=f"Não foi possível identificar pela foto ({exc}). "
+                        "Digite o nome da planta ou tente de novo.",
+                    ) from exc
+                # com nome digitado: cai no fallback abaixo
+
+    # Fallback: usa o nome digitado diretamente (confianca 0.5 = nao verificado).
+    return {
+        "species_common_name": typed_name,
+        "species_scientific_name": typed_name,
+        "confidence": 0.5,
+        "archetype": map_species_to_archetype(typed_name, typed_name),
+    }
 
 
 @app.post(
