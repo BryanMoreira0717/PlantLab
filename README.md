@@ -24,6 +24,7 @@
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Roadmap](#roadmap)
 - [Protocolo de casos extremos](#protocolo-de-casos-extremos)
+- [Regra de resolução de modelo](#regra-de-resolução-de-modelo-m-01)
 - [Como rodar](#como-rodar)
 - [Variaveis de ambiente](#variaveis-de-ambiente)
 - [Como testar o parcial do Passo 1](#como-testar-o-parcial-do-passo-1)
@@ -132,8 +133,8 @@ PlantLab/
 ### SPRINT 3 — O modelo 3D
 
 - [x] **Passo 8 — R3F + placeholder** (`<PlantViewer/>` com luz + OrbitControls + smoke headless)
-- [ ] **Passo 9 — .glb reais** (`useGLTF` por arquetipo em `public/models/`)
-- [ ] **Passo 10 — Animar pela simulacao** (murcha, cor, escala, stress com `useFrame`, inclui animacoes do Protocolo E-01)
+- [ ] **Passo 9 — .glb reais** (`useGLTF` por arquetipo em `public/models/`, Regra M-01)
+- [ ] **Passo 10 — Animar pela simulacao** (murcha, cor, escala, stress com `useFrame`, inclui animacoes do Protocolo E-01, sobre qualquer modelo da M-01)
 
 ### SPRINT 4 — Timeline, comparacao e polish
 
@@ -168,6 +169,21 @@ ex.: mar, agua fervendo, fogo, freezer, agua sanitaria, oleo, micro-ondas, queda
 escuro total). Executado no
 **Passo 6** (LLM trata extremos sem recusa) e no **Passo 10** (mapa evento-animacao
 especial + fallback), com casos de grupos distintos em cada bateria de testes.
+
+## Regra de resolução de modelo (M-01)
+
+**Regra M-01 — sempre mostrar uma planta, nunca tela vazia.** Ao identificar, o frontend
+resolve o modelo da biblioteca (`frontend/public/models/`) assim:
+
+1. **Exato:** existe o `.glb` do `archetype` vindo do backend → usa ele.
+2. **Mais próximo:** não existe → usa o vizinho visual mais parecido, nesta ordem:
+   `arbustiva ↔ arvore_pequena`, `graminea → arbustiva`, `suculenta → folha_larga`.
+3. **Default:** nenhum vizinho disponível → `folha_larga` (sempre presente).
+
+Sequência no tempo: o **Passo 9** implementa esta regra com os modelos **estáticos**
+(só troca o modelo, sem reação). As **consequências visuais** da simulação
+(murcha, cor, escala, estresse — inclusive E-01) entram no **Passo 10**, que anima
+qualquer modelo resolvido pela M-01, inclusive o default.
 
 ## Como rodar
 
