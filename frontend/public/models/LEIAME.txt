@@ -1,11 +1,11 @@
 Modelos 3D da biblioteca (todos CC0 — domínio público, uso livre).
 
-- suculenta.glb: "Cactus" por Quaternius, via Poly Pizza (https://poly.pizza/m/97wBswIAvM).
+- suculenta.glb: "Cactus" por Quaternius (https://poly.pizza/m/97wBswIAvM).
+- folha_larga.glb: "Monstera Plant" por Isa Lousberg (https://poly.pizza/m/s9Nocqk1Ge).
+- arbustiva.glb: "Bush" por Quaternius (https://poly.pizza/m/EoTERLq3z2).
+- graminea.glb: "Tall Grass" por Quaternius (https://poly.pizza/m/JSIYtscPmP).
+- arvore_pequena.glb: "Tree" por Quaternius (https://poly.pizza/m/QVOop92WmG).
 
-Como adicionar os demais arquetipos (folha_larga, arbustiva, graminea, arvore_pequena):
-1. Baixe um .glb CC0 no Poly Pizza ou Sketchfab (filtre por CC0/downloadable).
-2. Salve aqui como public/models/<arquetipo>.glb (prefira arquivos pequenos, < 2 MB).
-3. Registre em src/components/models.ts (ARCHETYPE_FILES).
-
-Sem o arquivo, a Regra M-01 usa o vizinho mais próximo ou o placeholder
-procedural — o app nunca quebra por falta de modelo.
+Todos via Poly Pizza, licença CC0. Para trocar um modelo: baixe outro .glb CC0
+(Poly Pizza/Sketchfab), salve aqui com o mesmo nome e pronto — o manifest
+(src/components/models.ts) continua valendo. Prefira arquivos < 2 MB.

@@ -10,6 +10,9 @@ import * as THREE from 'three'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Html, OrbitControls, useGLTF, useProgress } from '@react-three/drei'
 import { resolveModelUrl } from './models'
+import { resolveSpeciesModel, SpeciesModel } from './SpeciesModels'
+import SpecialFx from './SpecialFx'
+import { FX_META, detectSpecialFx, type FxKind } from './fx'
 import {
   clamp01,
   clampGrowth,
@@ -24,9 +27,16 @@ interface PlantViewerProps {
   /** Arquétipo vindo do backend. Com .glb registrado carrega o modelo real (M-01),
    *  sem arquivo cai no placeholder — nunca quebra. */
   archetype?: string
+  /** Nome popular/científico para selecionar um modelo botânico mais específico. */
+  species?: string
   /** Params do /simulate-event. null = planta saudável. A transição é sempre
    *  suave (damp no useFrame); o Passo 11 vai alimentar alvos interpolados. */
   simulation?: SimulationParams | null
+  /** Texto livre do evento: ativa o efeito característico (fogo, água...).
+   *  null = só o sistema genérico de murcha/cor/escala. */
+  event?: string
+  /** Override de dev (?fx=): força o efeito sem passar pela detecção. */
+  forceFx?: FxKind | null
 }
 
 interface LeafConfig {
@@ -203,7 +213,17 @@ function LoadingOverlay() {
   return <div className="viewer-loading">Carregando modelo 3D… {Math.round(progress)}%</div>
 }
 
-function Scene({ url, sim }: { url: string | null; sim: SimulationParams | null }) {
+function Scene({
+  url,
+  speciesModel,
+  sim,
+  fx,
+}: {
+  url: string | null
+  speciesModel: ReturnType<typeof resolveSpeciesModel>
+  sim: SimulationParams | null
+  fx: FxKind | null
+}) {
   const growthRef = useRef<THREE.Group>(null)
   const wiltRef = useRef<THREE.Group>(null)
   usePlantAnimation(growthRef, wiltRef, sim)
@@ -223,7 +243,9 @@ function Scene({ url, sim }: { url: string | null; sim: SimulationParams | null 
       <group ref={growthRef}>
         <ModelErrorBoundary key={url ?? 'placeholder'}>
           <Suspense fallback={null}>
-            {url ? (
+            {speciesModel ? (
+              <><Pot /><group ref={wiltRef}><SpeciesModel kind={speciesModel} /></group></>
+            ) : url ? (
               <group ref={wiltRef}>
                 <FittedModel url={url} />
               </group>
@@ -244,6 +266,7 @@ function Scene({ url, sim }: { url: string | null; sim: SimulationParams | null 
         <meshStandardMaterial color="#dde7d4" roughness={1} />
       </mesh>
       <ContactShadows position={[0, 0.01, 0]} opacity={0.4} scale={8} blur={2.2} far={4} />
+      <SpecialFx kind={fx} growthRef={growthRef} wiltRef={wiltRef} />
       <StressGlow active={stressed} />
       {stressed && (
         <Html position={[0, 2.75, 0]} center zIndexRange={[5, 0]}>
@@ -264,20 +287,32 @@ function Scene({ url, sim }: { url: string | null; sim: SimulationParams | null 
 
 export default function PlantViewer({
   archetype = 'folha_larga',
+  species = '',
   simulation = null,
+  event = '',
+  forceFx = null,
 }: PlantViewerProps) {
   const url = resolveModelUrl(archetype)
+  const speciesModel = resolveSpeciesModel(species)
+  const fx = forceFx ?? detectSpecialFx(event)
+  const fxMeta = fx ? FX_META[fx] : null
   return (
     <div
       className="viewer-wrap"
       role="img"
       aria-label={`Modelo 3D de planta (arquétipo ${archetype})${
         simulation ? ', mostrando o efeito da simulação' : ''
-      }. Arraste para girar.`}
+      }${fxMeta ? `, efeito ${fxMeta.label}` : ''}. Arraste para girar.`}
     >
       <LoadingOverlay />
+      {fxMeta && (
+        <div className="fx-chip">
+          {fxMeta.icon} {fxMeta.label}
+        </div>
+      )}
+      {fx === 'dark' && <div className="fx-dark-overlay" aria-hidden="true" />}
       <Canvas shadows dpr={[1, 2]} camera={{ position: [3.2, 2.4, 4.2], fov: 42 }}>
-        <Scene url={url} sim={simulation} />
+        <Scene url={url} speciesModel={speciesModel} sim={simulation} fx={fx} />
       </Canvas>
     </div>
   )

@@ -24,6 +24,7 @@
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Roadmap](#roadmap)
 - [Protocolo de casos extremos](#protocolo-de-casos-extremos)
+- [Modelos e cenários 3D](#modelos-e-cenarios-3d)
 - [Regra de resolução de modelo](#regra-de-resolução-de-modelo-m-01)
 - [Como rodar](#como-rodar)
 - [Variaveis de ambiente](#variaveis-de-ambiente)
@@ -98,6 +99,7 @@ PlantLab/
 │   │   ├── App.tsx              # tela principal
 │   │   ├── api.ts               # cliente do backend
 │   │   ├── components/PlantViewer.tsx  # cena 3D animada (Passos 8-10)
+│   │   ├── components/SpeciesModels.tsx # modelos procedurais: manjericão, monstera, girassol, rosa, samambaia
 │   │   ├── components/effects.ts     # matematica dos efeitos (murcha/cor/escala)
 │   │   ├── components/models.ts      # biblioteca .glb + Regra M-01
 │   │   └── main.tsx
@@ -136,7 +138,7 @@ PlantLab/
 
 - [x] **Passo 8 — R3F + placeholder** (`<PlantViewer/>` com luz + OrbitControls + smoke headless)
 - [x] **Passo 9 — .glb reais** (M-01: `suculenta.glb` CC0 + fallback, `useGLTF`, ErrorBoundary, auto-fit, e2e swap)
-- [x] **Passo 10 — Animar pela simulacao** (murcha/cor/escala/stress suaves via `useFrame`, E-01, badge + glow)
+- [x] **Passo 10 — Animar pela simulacao** (murcha/cor/escala/stress, efeitos por evento, partículas e espécies procedurais)
 
 ### SPRINT 4 — Timeline, comparacao e polish
 
@@ -186,6 +188,26 @@ Sequência no tempo: o **Passo 9** implementa esta regra com os modelos **estát
 (só troca o modelo, sem reação). As **consequências visuais** da simulação
 (murcha, cor, escala, estresse — inclusive E-01) entram no **Passo 10**, que anima
 qualquer modelo resolvido pela M-01, inclusive o default.
+
+## Modelos e cenários 3D
+
+Além dos cinco modelos `.glb` CC0 da biblioteca de arquétipos, `frontend/src/components/SpeciesModels.tsx`
+constrói malhas Three.js específicas para 11 espécies: manjericão, costela-de-adão, girassol,
+roseira, samambaia, orquídea, tomateiro, babosa, lavanda, bambu e limoeiro.
+No formulário, abra **“Testar cenários prontos (sem chave de IA)”** para visualizar exemplos sem
+backend/LLM: submersão no rio, inundação de 700 litros, cuidado correto, solo compactado, falta de
+luz/água, calor, geada/granizo, pragas, vendaval, chuva leve, poda, transplante, polinização,
+floração, composto, químicos domésticos, excesso de fertilizante e micro-ondas.
+
+As animações também podem ser testadas direto pela URL de desenvolvimento, por exemplo
+`http://localhost:5173/?fx=flood&archetype=folha_larga`. Efeitos disponíveis: `fire`, `water`,
+`flood`, `heat`, `drought`, `frost`, `fall`, `dark`, `microwave`, `soil`, `nutrient`, `care`, `wind`, `pests`,
+`sunlight`, `rain`, `pruning`, `repot`, `pollination`, `bloom`, `chemical`, `hail` e `compost`.
+A correnteza/submersão, chuva leve e água despejada em grande volume são efeitos diferentes;
+“brilho de felicidade” é uma metáfora visual para vitalidade, não um efeito biológico literal.
+
+Provas de navegador (com `npm run dev` ativo): `node e2e/fx-proof.mjs` valida os 23 efeitos;
+`node e2e/species-demo-proof.mjs` testa os 23 cenários de texto, espécies e animações.
 
 ## Como rodar
 

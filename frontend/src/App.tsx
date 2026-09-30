@@ -6,6 +6,7 @@ import {
   type Simulation,
 } from './api'
 import PlantViewer from './components/PlantViewer'
+import { FX_KINDS, type FxKind } from './components/fx'
 import './App.css'
 
 const MAX_PREVIEW_LABEL = 48
@@ -17,6 +18,33 @@ const COLOR_META: Record<string, { label: string; dot: string }> = {
   verde_escuro: { label: 'Verde escuro', dot: '#1b5e20' },
   verde_claro: { label: 'Verde claro', dot: '#7bc47f' },
 }
+
+/** Cenários sem API para demonstrar, imediatamente, os modelos e os efeitos 3D. */
+const DEMO_CASES = [
+  { title: 'Manjericão no fundo do rio', common: 'Manjericão', scientific: 'Ocimum basilicum', archetype: 'folha_larga', event: 'Joguei o manjericão no fundo do rio: a planta fica submersa na correnteza.', explanation: 'Debaixo d’água, as folhas e raízes recebem pouco oxigênio e luz. A correnteza também pode danificar a planta; é uma demonstração educativa.', params: { wilt_level: 0.85, leaf_color_shift: 'amarelado', growth_rate_change: -0.9, stress_flag: true, timeline_days: 2 } },
+  { title: 'Monstera com 700 L de água', common: 'Costela-de-adão', scientific: 'Monstera deliciosa', archetype: 'folha_larga', event: 'Joguei 700 litros de água de uma vez na planta, uma inundação enorme.', explanation: 'O volume extremo encharca o substrato e pode arrastar o vaso. A chuva intensa e a água subindo são representadas na cena.', params: { wilt_level: 0.95, leaf_color_shift: 'amarronzado', growth_rate_change: -1, stress_flag: true, timeline_days: 1 } },
+  { title: 'Girassol bem cuidado', common: 'Girassol', scientific: 'Helianthus annuus', archetype: 'arbustiva', event: 'Cuidei certinho: água na medida, luz adequada e solo drenado.', explanation: 'Com água, luz e drenagem adequadas, a planta tende a manter folhas firmes e crescer. O brilho é uma metáfora visual de vitalidade, não uma resposta biológica literal.', params: { wilt_level: 0, leaf_color_shift: 'verde_claro', growth_rate_change: 0.8, stress_flag: false, timeline_days: 14 } },
+  { title: 'Roseira em solo compactado', common: 'Roseira', scientific: 'Rosa chinensis', archetype: 'arbustiva', event: 'Plantei a roseira em terra muito compactada e sem drenagem.', explanation: 'Solo compactado reduz a circulação de ar e dificulta a drenagem. As raízes podem sofrer com falta de oxigênio e excesso de água.', params: { wilt_level: 0.65, leaf_color_shift: 'amarelado', growth_rate_change: -0.6, stress_flag: true, timeline_days: 10 } },
+  { title: 'Samambaia no escuro', common: 'Samambaia', scientific: 'Nephrolepis exaltata', archetype: 'graminea', event: 'Deixei a samambaia sete dias dentro de um armário sem luz.', explanation: 'Sem luz, a fotossíntese cai e a planta consome suas reservas. O efeito depende da espécie e da duração.', params: { wilt_level: 0.5, leaf_color_shift: 'verde_escuro', growth_rate_change: -0.7, stress_flag: true, timeline_days: 7 } },
+  { title: 'Manjericão no calor seco', common: 'Manjericão', scientific: 'Ocimum basilicum', archetype: 'folha_larga', event: 'Deixei o manjericão no sol forte e calor seco por horas.', explanation: 'Calor e alta evaporação podem levar à perda de água e queimaduras nas folhas, especialmente sem aclimatação.', params: { wilt_level: 0.72, leaf_color_shift: 'amarronzado', growth_rate_change: -0.65, stress_flag: true, timeline_days: 1 } },
+  { title: 'Cacto em geada', common: 'Cacto', scientific: 'Echinopsis', archetype: 'suculenta', event: 'Deixei o cacto exposto a uma geada e temperaturas abaixo de zero.', explanation: 'O frio intenso pode lesar tecidos, mesmo em espécies resistentes à seca. A tolerância varia entre cactos.', params: { wilt_level: 0.3, leaf_color_shift: 'amarronzado', growth_rate_change: -0.8, stress_flag: true, timeline_days: 1 } },
+  { title: 'Costela-de-adão com pragas', common: 'Costela-de-adão', scientific: 'Monstera deliciosa', archetype: 'folha_larga', event: 'Uma infestação de pulgões está atacando as folhas novas.', explanation: 'Insetos sugadores retiram seiva e podem deformar brotos. A inspeção precoce ajuda a conter a infestação.', params: { wilt_level: 0.35, leaf_color_shift: 'amarelado', growth_rate_change: -0.5, stress_flag: true, timeline_days: 5 } },
+  { title: 'Girassol em vendaval', common: 'Girassol', scientific: 'Helianthus annuus', archetype: 'arbustiva', event: 'Um vendaval forte está balançando e tombando o girassol.', explanation: 'Vento forte pode quebrar caules, rasgar folhas e aumentar a perda de água. Estruturas de apoio podem reduzir danos.', params: { wilt_level: 0.45, leaf_color_shift: 'nenhum', growth_rate_change: -0.4, stress_flag: true, timeline_days: 1 } },
+  { title: 'Rosa com excesso de adubo', common: 'Roseira', scientific: 'Rosa chinensis', archetype: 'arbustiva', event: 'Coloquei fertilizante demais no vaso da roseira.', explanation: 'O excesso de sais do fertilizante pode dificultar a absorção de água e queimar raízes e folhas. Adubo não substitui os cuidados básicos.', params: { wilt_level: 0.55, leaf_color_shift: 'amarronzado', growth_rate_change: -0.55, stress_flag: true, timeline_days: 3 } },
+  { title: 'Girassol com luz adequada', common: 'Girassol', scientific: 'Helianthus annuus', archetype: 'arbustiva', event: 'Coloquei o girassol num local claro, com luz adequada e rega moderada.', explanation: 'Luz apropriada e água sem encharcamento favorecem a fotossíntese e o crescimento. O halo representa vitalidade de forma simbólica.', params: { wilt_level: 0, leaf_color_shift: 'verde_claro', growth_rate_change: 0.55, stress_flag: false, timeline_days: 10 } },
+  { title: 'Samambaia sem água', common: 'Samambaia', scientific: 'Nephrolepis exaltata', archetype: 'graminea', event: 'Esqueci de regar a samambaia por vários dias; a terra ficou seca.', explanation: 'A falta de água reduz a pressão nas células e causa murcha. O tempo para recuperação depende do grau de desidratação.', params: { wilt_level: 0.8, leaf_color_shift: 'amarronzado', growth_rate_change: -0.7, stress_flag: true, timeline_days: 4 } },
+  { title: 'Manjericão no micro-ondas', common: 'Manjericão', scientific: 'Ocimum basilicum', archetype: 'folha_larga', event: 'Coloquei o vaso com manjericão dentro do micro-ondas.', explanation: 'Micro-ondas não é ambiente para plantas: o aquecimento pode danificar tecidos e o vaso. Não faça esse experimento; a visualização é apenas educativa.', params: { wilt_level: 1, leaf_color_shift: 'amarronzado', growth_rate_change: -1, stress_flag: true, timeline_days: 0 } },
+  { title: 'Orquídea abrindo flores', common: 'Orquídea', scientific: 'Phalaenopsis', archetype: 'folha_larga', event: 'A orquídea está abrindo flores novas depois de meses bem cuidada.', explanation: 'A floração marca uma fase do ciclo de vida que depende de espécie, luz, temperatura e maturidade. As pétalas animadas são uma representação visual.', params: { wilt_level: 0, leaf_color_shift: 'verde_claro', growth_rate_change: 0.35, stress_flag: false, timeline_days: 30 } },
+  { title: 'Tomate sendo polinizado', common: 'Tomateiro', scientific: 'Solanum lycopersicum', archetype: 'arbustiva', event: 'Abelhas estão visitando e polinizando as flores do tomateiro.', explanation: 'A polinização transfere pólen e pode permitir a formação de frutos. Muitas variedades de tomate também conseguem autopolinizar-se.', params: { wilt_level: 0, leaf_color_shift: 'verde_claro', growth_rate_change: 0.4, stress_flag: false, timeline_days: 7 } },
+  { title: 'Babosa em solo seco', common: 'Babosa', scientific: 'Aloe vera', archetype: 'suculenta', event: 'A babosa está num substrato seco e ficou vários dias sem rega.', explanation: 'A babosa armazena água e tolera períodos secos, mas isso não significa que nunca precise de água. O intervalo depende do substrato e do clima.', params: { wilt_level: 0.25, leaf_color_shift: 'verde_escuro', growth_rate_change: -0.25, stress_flag: true, timeline_days: 14 } },
+  { title: 'Lavanda recebendo composto', common: 'Lavanda', scientific: 'Lavandula angustifolia', archetype: 'arbustiva', event: 'Misturei uma pequena quantidade de composto orgânico bem curtido ao solo da lavanda.', explanation: 'Composto bem maturado pode melhorar a estrutura do solo. A lavanda prefere boa drenagem; adições em excesso ou solo encharcado podem prejudicá-la.', params: { wilt_level: 0, leaf_color_shift: 'verde_claro', growth_rate_change: 0.3, stress_flag: false, timeline_days: 21 } },
+  { title: 'Bambu sob chuva leve', common: 'Bambu', scientific: 'Bambusa vulgaris', archetype: 'graminea', event: 'Uma garoa leve caiu sobre o bambu e molhou o solo sem encharcar.', explanation: 'Uma chuva leve repõe um pouco da água do solo sem necessariamente causar alagamento. A necessidade real depende da espécie e da drenagem.', params: { wilt_level: 0, leaf_color_shift: 'nenhum', growth_rate_change: 0.1, stress_flag: false, timeline_days: 1 } },
+  { title: 'Limoeiro transplantado', common: 'Limoeiro', scientific: 'Citrus limon', archetype: 'arvore_pequena', event: 'Transplantei o limoeiro com cuidado para um vaso maior e substrato drenado.', explanation: 'Um transplante cuidadoso oferece mais espaço às raízes, mas pode causar estresse temporário. Manter o torrão e evitar danos reduz o choque.', params: { wilt_level: 0.15, leaf_color_shift: 'nenhum', growth_rate_change: 0.25, stress_flag: false, timeline_days: 7 } },
+  { title: 'Roseira sendo podada', common: 'Roseira', scientific: 'Rosa chinensis', archetype: 'arbustiva', event: 'Fiz uma poda leve, removendo ramos secos da roseira com tesoura limpa.', explanation: 'A poda de partes secas pode ajudar na manutenção, desde que respeite a espécie e a época adequada. A cena mostra a queda simbólica de folhas cortadas.', params: { wilt_level: 0.05, leaf_color_shift: 'nenhum', growth_rate_change: 0.15, stress_flag: false, timeline_days: 10 } },
+  { title: 'Tomateiro atingido por granizo', common: 'Tomateiro', scientific: 'Solanum lycopersicum', archetype: 'arbustiva', event: 'Uma chuva de granizo atingiu as folhas e os frutos do tomateiro.', explanation: 'Pedras de granizo podem rasgar folhas, ferir caules e frutos. A intensidade do dano depende do tamanho das pedras e da duração da tempestade.', params: { wilt_level: 0.55, leaf_color_shift: 'amarronzado', growth_rate_change: -0.6, stress_flag: true, timeline_days: 1 } },
+  { title: 'Costela-de-adão com água sanitária', common: 'Costela-de-adão', scientific: 'Monstera deliciosa', archetype: 'folha_larga', event: 'Derramei água sanitária nas folhas e no vaso da planta.', explanation: 'Água sanitária pode queimar tecidos vegetais e contaminar o solo. Não aplique produtos domésticos em plantas; mantenha-os longe de crianças e animais.', params: { wilt_level: 0.9, leaf_color_shift: 'amarronzado', growth_rate_change: -0.9, stress_flag: true, timeline_days: 1 } },
+  { title: 'Manjericão com chuva leve', common: 'Manjericão', scientific: 'Ocimum basilicum', archetype: 'folha_larga', event: 'Uma chuvinha leve molhou as folhas do manjericão, sem deixar o vaso alagado.', explanation: 'Uma chuva leve não é o mesmo que uma inundação: o efeito depende de quanto o substrato retém água e se o vaso tem drenagem.', params: { wilt_level: 0, leaf_color_shift: 'nenhum', growth_rate_change: 0.12, stress_flag: false, timeline_days: 1 } },
+]
 
 function fileLabel(file: File): string {
   const name =
@@ -48,6 +76,17 @@ function App() {
   const [simulating, setSimulating] = useState(false)
   const [simulateError, setSimulateError] = useState<string | null>(null)
   const [slowSim, setSlowSim] = useState(false)
+
+  // Ferramenta de dev/teste: ?fx=fire|water|... força o efeito, ?archetype=
+  // troca o modelo — sem backend, sem gastar quota. Ex.: ?fx=fire&archetype=suculenta
+  const [devOverride] = useState(() => {
+    const query = new URLSearchParams(window.location.search)
+    const fxParam = query.get('fx')
+    return {
+      fx: fxParam && (FX_KINDS as string[]).includes(fxParam) ? (fxParam as FxKind) : null,
+      archetype: query.get('archetype'),
+    }
+  })
 
   // Passo 7: a IA real demora — depois de 8s o loading muda o discurso.
   useEffect(() => {
@@ -129,6 +168,20 @@ function App() {
     } finally {
       setSimulating(false)
     }
+  }
+
+  function previewDemo(demo: (typeof DEMO_CASES)[number]) {
+    setIdentification({
+      species_common_name: demo.common,
+      species_scientific_name: demo.scientific,
+      confidence: 1,
+      archetype: demo.archetype,
+    })
+    setPlantName(demo.common)
+    setEventDescription(demo.event)
+    setSimulation({ explanation: demo.explanation, simulation_params: demo.params })
+    setIdentifyError(null)
+    setSimulateError(null)
   }
 
   const params = simulation?.simulation_params
@@ -295,6 +348,18 @@ function App() {
               <span className="char-count" aria-live="polite">{eventDescription.length}/600</span>
             </div>
 
+            <details className="demo-scenarios">
+              <summary>✨ Testar cenários prontos (sem chave de IA)</summary>
+              <p>Pré-visualizações educativas: clique para trocar a espécie e ver a animação sem chamar serviços externos.</p>
+              <div className="demo-scenario-list">
+                {DEMO_CASES.map((demo) => (
+                  <button type="button" key={demo.title} onClick={() => previewDemo(demo)}>
+                    {demo.title}
+                  </button>
+                ))}
+              </div>
+            </details>
+
             <button
               type="button"
               className="simulate-btn"
@@ -319,7 +384,13 @@ function App() {
         <section className="result" aria-labelledby="result-title" aria-live="polite">
           <p className="card-kicker">Etapa 3</p>
           <h2 id="result-title">Resultado</h2>
-          <PlantViewer archetype={identification?.archetype} simulation={simulation?.simulation_params ?? null} />
+          <PlantViewer
+            archetype={devOverride.archetype ?? identification?.archetype}
+            species={identification?.species_scientific_name ?? identification?.species_common_name}
+            simulation={simulation?.simulation_params ?? null}
+            event={eventDescription}
+            forceFx={devOverride.fx}
+          />
           {simulating ? (
             <div className="result-loading">
               <span className="btn-spinner big" aria-hidden="true" />

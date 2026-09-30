@@ -336,6 +336,49 @@
   color: var(--text-muted);
 }
 
+.demo-scenarios {
+  margin-top: 28px;
+  padding: 13px 14px;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: #f8fbf5;
+}
+
+.demo-scenarios summary {
+  color: var(--primary-dark);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.demo-scenarios p {
+  margin: 10px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.demo-scenario-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.demo-scenario-list button {
+  padding: 7px 10px;
+  border: 1px solid #cbdcc4;
+  border-radius: 999px;
+  background: #fff;
+  color: #315b32;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.demo-scenario-list button:hover {
+  border-color: var(--primary);
+  background: #edf7e9;
+}
+
 /* ---------- Simulate button ---------- */
 
 .simulate-btn {
@@ -409,6 +452,35 @@
   box-shadow: 0 4px 12px -4px rgba(178, 34, 34, 0.6);
   animation: stress-pulse 1.2s ease-in-out infinite;
   user-select: none;
+}
+
+.fx-chip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 6;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--text-strong);
+  background: rgba(255, 253, 248, 0.92);
+  border: 1px solid var(--surface-border);
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}
+
+.fx-dark-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: radial-gradient(
+    circle at 50% 35%,
+    rgba(10, 10, 40, 0.25),
+    rgba(0, 0, 10, 0.62)
+  );
+  pointer-events: none;
 }
 
 @keyframes stress-pulse {

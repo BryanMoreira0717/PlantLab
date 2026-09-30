@@ -8,6 +8,10 @@
 
 export const ARCHETYPE_FILES: Record<string, string> = {
   suculenta: '/models/suculenta.glb',
+  folha_larga: '/models/folha_larga.glb',
+  arbustiva: '/models/arbustiva.glb',
+  graminea: '/models/graminea.glb',
+  arvore_pequena: '/models/arvore_pequena.glb',
 }
 
 /** Vizinhos visuais por arquétipo (Regra M-01, passo 2). */
